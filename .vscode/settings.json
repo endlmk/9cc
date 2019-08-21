@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.org": "org",
+        "string.h": "c"
+    }
+}
