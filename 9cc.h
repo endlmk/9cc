@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+void error(char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);
 
 // tokenize
@@ -12,6 +13,7 @@ void error_at(char *loc, char *fmt, ...);
 // トークンの種類
 typedef enum {
     TK_RESERVED, // 記号
+    TK_IDENT,    // 識別子
     TK_NUM,      // 整数トークン
     TK_EOF,      // 入力の終わりを表すトークン
 } TokenKind;
@@ -26,14 +28,15 @@ struct Token
     int len;        // トークンの長さ
 };
 
-char *user_input;
-Token *token;
+extern char *user_input;
+extern Token *token;
 
 bool consume(char *op);
+Token* consume_ident();
 void expect(char *op);
 int expect_number();
 bool at_eof();
-Token *new_token(TokenKind kind, Token *cur, char *str, int len);
+Token *new_token(TokenKind kind, Token *cur, char *str);
 Token *tokenize(char *p);
 
 // parse
@@ -45,6 +48,8 @@ typedef enum
     ND_SUB, // -
     ND_MUL, // *
     ND_DIV, // /
+    ND_ASSIGN, // =
+    ND_LVAR, // ローカル変数
     ND_EQ,  // ==
     ND_NEQ, // !=
     ND_LT,  // <
@@ -61,11 +66,18 @@ struct Node
     Node *lhs;     // 左辺
     Node *rhs;     // 右辺
     int val;       // kindがND_NUMの場合のみ使う
+    int offset;    // kindがND_LVARの場合のみ使う
 };
 
 Node *new_node(NodeKind kind, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
+
+extern Node *code[100];
+
+void program();
+Node *stmt();
 Node *expr();
+Node *assign();
 Node *equality();
 Node *relational();
 Node *add();
@@ -74,5 +86,6 @@ Node *unary();
 Node *primary();
 
 // codegen
+void gen_lval(Node *node);
 void gen(Node *node);
 void codegen(Node* node);

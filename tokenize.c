@@ -7,6 +7,16 @@ Token *token;
 
 // エラーを報告するための関数
 // printfと同じ引数を取る
+void error(char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    vfprintf(stderr, fmt, ap);
+    fprintf(stderr, "\n");
+    va_end(ap);
+    exit(1);
+}
+
 void error_at(char *loc, char *fmt, ...)
 {
     va_list ap;
@@ -34,6 +44,17 @@ bool consume(char *op)
     }
     token = token->next;
     return true;
+}
+
+Token* consume_ident()
+{
+    if(token->kind != TK_IDENT)
+    {
+        return NULL;
+    }
+    Token* tok = token;
+    token = token->next;
+    return tok;
 }
 
 // 次のトークンが期待している記号のときには、トークンを一つ読みすすめる。
@@ -69,12 +90,11 @@ bool at_eof()
 }
 
 // 新しいトークンを作成してcurにつなげる
-Token *new_token(TokenKind kind, Token *cur, char *str, int len)
+Token *new_token(TokenKind kind, Token *cur, char *str)
 {
     Token *tok = calloc(1, sizeof(Token));
     tok->kind = kind;
     tok->str = str;
-    tok->len = len;
     cur->next = tok;
     return tok;
 }
@@ -98,7 +118,8 @@ Token *tokenize(char *p)
            strncmp(p, "<=", 2) == 0 ||
            strncmp(p, ">=", 2) == 0)
         {
-            cur = new_token(TK_RESERVED, cur, p, 2);
+            cur = new_token(TK_RESERVED, cur, p);
+            cur->len = 2;
             p += 2;
             continue;
         }
@@ -109,14 +130,23 @@ Token *tokenize(char *p)
            *p == '(' ||
            *p == ')' ||
            *p == '<' ||
-           *p == '>')
+           *p == '>' ||
+           *p == ';' ||
+           *p == '=')
         {
-            cur = new_token(TK_RESERVED, cur, p++, 1);
+            cur = new_token(TK_RESERVED, cur, p++);            
+            cur->len = 1;
+            continue;
+        }
+        if('a' <= *p && *p <= 'z')
+        {
+            cur = new_token(TK_IDENT, cur, p++);
+            cur->len = 1;
             continue;
         }
         if(isdigit(*p))
         {
-            cur = new_token(TK_NUM, cur, p, 0);
+            cur = new_token(TK_NUM, cur, p);
             cur->val = strtol(p, &p, 10);
             continue;
         }
@@ -124,6 +154,6 @@ Token *tokenize(char *p)
         error_at(p, "トークナイズできません");
     }
 
-    new_token(TK_EOF, cur, p, 0);
+    new_token(TK_EOF, cur, p);
     return head.next;
 }
