@@ -31,4 +31,6 @@ try 1 '-3 > -5;'
 try 0 '-2 > 4;'
 try 6 'a = 3; a * 2;'
 try 3 'a = 3; b = a * 2; c = b / a + 1; c;'
+try 5 'return 5;'
+try 4 'a = 3; b = a * 2; return b / a + 2;'
 echo OK
