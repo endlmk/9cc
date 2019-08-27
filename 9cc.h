@@ -32,6 +32,7 @@ struct Token
 extern char *user_input;
 extern Token *token;
 
+bool is_alpha(char c);
 bool is_alnum(char c);
 
 bool consume(char *op);
@@ -89,6 +90,21 @@ Node *add();
 Node *mul();
 Node *unary();
 Node *primary();
+
+typedef struct LVar LVar;
+
+// ローカル変数の型
+struct LVar
+{
+    LVar *next; // 次の変数かNULL
+    char *name; // 変数の名前
+    int len;    // 名前の長さ
+    int offset; // RBPからのオフセット
+};
+
+extern LVar *locals;
+
+LVar *find_lvar(Token *tok);
 
 // codegen
 void gen_lval(Node *node);

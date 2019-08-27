@@ -19,6 +19,21 @@ Node *new_node_num(int val)
     return node;
 }
 
+LVar *locals = NULL;
+
+LVar *find_lvar(Token *tok)
+{
+    for(LVar *var = locals; var; var = var->next)
+    {
+        if(var->len == tok->len && 
+           strncmp(tok->str, var->name, var->len) == 0)
+        {
+            return var;
+        }
+    }
+    return NULL;
+}
+
 void program()
 {
     int i = 0;
@@ -181,7 +196,23 @@ Node *primary()
     {
         Node *node = calloc(1, sizeof(Node));
         node->kind = ND_LVAR;
-        node->offset = (tok->str[0] - 'a' + 1) * 8;
+        
+        LVar *lvar = find_lvar(tok);
+        if(lvar)
+        {
+            node->offset = lvar->offset;
+        }
+        else
+        {
+            lvar = calloc(1, sizeof(LVar));
+            lvar->next = locals;
+            lvar->name = tok->str;
+            lvar->len = tok->len;
+            lvar->offset = locals ? locals->offset + 8 : 8;
+            node->offset = lvar->offset;
+            locals = lvar;
+        }
+        
         return node; 
     }
 

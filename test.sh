@@ -33,4 +33,5 @@ try 6 'a = 3; a * 2;'
 try 3 'a = 3; b = a * 2; c = b / a + 1; c;'
 try 5 'return 5;'
 try 4 'a = 3; b = a * 2; return b / a + 2;'
+try 10 'hogehoge = 3 * 2 - 7; b = hogehoge * 2; return b * -5;'
 echo OK
